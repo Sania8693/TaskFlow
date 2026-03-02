@@ -23,8 +23,29 @@ init_db()
 @app.route('/')
 def home():
     return render_template("index.html")
-@app.route('/login')
+@app.route("/login", methods=["GET", "POST"])
 def login():
+    if request.method == "POST":
+        email = request.form["email"]
+        password = request.form["password"]
+
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT * FROM users 
+            WHERE email = ? AND password = ?
+        """, (email, password))
+
+        user = cursor.fetchone()
+
+        conn.close()
+
+        if user:
+            return "Login Successful!"
+        else:
+            return "Invalid Username or Password"
+
     return render_template("login.html")
 
 @app.route('/register',methods=['GET','POST'])
