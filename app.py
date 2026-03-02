@@ -33,9 +33,15 @@ def register():
         username=request.form['username']
         email=request.form['email']
         password=request.form['password']
-        print("Username:",username)
-        print("Email:",email)
-        print("Password:",password)
+
+        conn=sqlite3.connect("database.db")
+        cursor=conn.cursor()
+
+        cursor.execute("""INSERT INTO users(username,email,password)
+                       VALUES(?,?,?)
+                       """,(username,email,password))
+        conn.commit()
+        conn.close()
         return "User registered successfully"
     return render_template("register.html")
 
