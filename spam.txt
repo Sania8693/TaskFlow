@@ -1,0 +1,11 @@
+    return render_template("login.html")
+@app.route("/users")
+def users():
+    conn = sqlite3.connect("database.db")
+    cursor = conn.cursor()
+    cursor.execute("select * from users")
+    data=cursor.fetchall()
+    conn.close()
+    return str(data)
+
+
