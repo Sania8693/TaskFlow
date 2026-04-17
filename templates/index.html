@@ -97,7 +97,7 @@
 </nav>
 
 <!-- HERO SECTION -->
-<section id="home" class="hero fade-in">
+<section id="home" class="hero">
     <div>
         <h1 class="fw-bold display-4">Smart Task Management System</h1>
         <p class="mt-3">AI Powered Task Classification & Analytics</p>
@@ -207,21 +207,30 @@
     <p>© 2026 Smart Task Manager | Final Year Project</p>
 </footer>
 <script>
+    // Function to trigger fade-in for visible elements
+    function triggerFadeIn() {
+        let elements = document.querySelectorAll(".fade-in");
+        elements.forEach(el => {
+            let position = el.getBoundingClientRect().top;
+            let screenHeight = window.innerHeight;
+
+            if (position < screenHeight - 100) {
+                el.style.opacity = 1;
+                el.style.transform = "translateY(0)";
+            }
+        });
+    }
+
+    // Trigger fade-in on page load
+    window.addEventListener("load", triggerFadeIn);
+    
+    // Trigger fade-in on scroll
+    window.addEventListener("scroll", triggerFadeIn);
+
+    // Counter animation
     let counters = document.querySelectorAll(".counter");
     
     counters.forEach(counter => {
-        window.addEventListener("scroll", function() {
-    let elements = document.querySelectorAll(".fade-in");
-    elements.forEach(el => {
-        let position = el.getBoundingClientRect().top;
-        let screenHeight = window.innerHeight;
-
-        if (position < screenHeight - 100) {
-            el.style.opacity = 1;
-            el.style.transform = "translateY(0)";
-        }
-    });
-});
         counter.innerText = "0";
         let update = () => {
             let target = +counter.getAttribute("data-target");
@@ -237,6 +246,6 @@
         };
         update();
     });
-    </script>
+</script>
 </body>
 </html>
