@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 from flask import Flask, render_template,request,redirect,session,url_for
 app=Flask(__name__)
 app.secret_key="secret_key_for_session"
@@ -65,13 +66,14 @@ def login():
         if user:
             session['user_id']=user[0]
             session['username']=user[1]
+            session['email']=user[2]
             session['role']=user[4]
-            if session['role']=="admin":
-                return redirect(url_for("admin_dashboard"))
-            else:
-                return redirect(url_for("user_dashboard"))
-        return "ivalid credentials"
+            session['login_time'] = datetime.now().strftime("%B %d, %Y at %I:%M %p")
+
+            return render_template("login_success.html", username=user[1], email=user[2], role=user[4], login_time=session['login_time'])
+        return "Invalid credentials"
     return render_template("login.html")
+
 
 @app.route('/register',methods=['GET','POST'])
 def register():
@@ -132,24 +134,32 @@ def setup_admin():
     conn.close()
     return "admin created"
     
-
-@app.route("/create_task",methods=["POST"])
-def create_task():
-    user_id=session.get('user_id')
-    if 'user_id' not in session:
-        return redirect(url_for("login"))
-    title=request.form['title']
-    description=request.form['description']
-    due_date=request.form['due_date']
-    priority=ai_priority_logic(description)
-    conn = sqlite3.connect("database.db")
-    cursor = conn.cursor()
-    cursor.execute("""INSERT INTO tasks(title,description,due_date,priority,user_id)
-                       VALUES(?,?,?,?,?)
-                       """,(title,description,due_date,priority,session['user_id']))
-    conn.commit()
-    conn.close()
-    return redirect(url_for("user_dashboard"))
+@app.route("/add_task", methods=["GET", "POST"])
+def add_task():
+    if request.method == "GET":
+        # Check if user is logged in
+        if 'user_id' not in session:
+            return redirect(url_for("login"))
+        # Display the form
+        return render_template("add_task.html")
+    
+    # POST request - handle form submission
+    if request.method == "POST":
+        user_id = session.get('user_id')
+        if 'user_id' not in session:
+            return redirect(url_for("login"))
+        title = request.form['title']
+        description = request.form['description']
+        due_date = request.form['due_date']
+        priority = ai_priority_logic(description)
+        conn = sqlite3.connect("database.db")
+        cursor = conn.cursor()
+        cursor.execute("""INSERT INTO tasks(title,description,due_date,priority,user_id)
+                           VALUES(?,?,?,?,?)
+                           """, (title, description, due_date, priority, session['user_id']))
+        conn.commit()
+        conn.close()
+        return redirect(url_for("user_dashboard"))
 @app.route("/admin_dashboard")
 def admin_dashboard():
     if session.get('role')!='admin':
