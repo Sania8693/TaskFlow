@@ -1,11 +1,21 @@
 import sqlite3
+import os
 from datetime import datetime
 from flask import Flask, render_template,request,redirect,session,url_for
 app=Flask(__name__)
 app.secret_key="secret_key_for_session"
 
+# Absolute path for database - persists in current directory
+DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "database.db"))
+
+def getdb():
+    """Get database connection with absolute path"""
+    conn = sqlite3.connect(DB_PATH)
+    return conn
+
 def init_db():
-    conn = sqlite3.connect("database.db")
+    """Initialize database tables if they don't exist"""
+    conn = getdb()
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -26,11 +36,11 @@ def init_db():
             due_date DATE,
             user_id INTEGER,
             FOREIGN KEY (user_id) REFERENCES users(id)
-
         )
     """)
     conn.commit()
     conn.close()
+    print(f"Database initialized at: {DB_PATH}")
 def ai_priority_logic(description):
     #intelligent logic for automatic priority assignment
     desc=description.lower()
@@ -51,7 +61,7 @@ def login():
         email = request.form["email"]
         password = request.form["password"]
 
-        conn = sqlite3.connect("database.db")
+        conn = getdb()
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -74,6 +84,11 @@ def login():
         return "Invalid credentials"
     return render_template("login.html")
 
+@app.route('/logout')
+def logout():
+    """Logout user and clear session"""
+    session.clear()
+    return redirect(url_for("login"))
 
 @app.route('/register',methods=['GET','POST'])
 def register():
@@ -82,7 +97,7 @@ def register():
         email=request.form['email']
         password=request.form['password']
 
-        conn=sqlite3.connect("database.db")
+        conn=getdb()
         cursor=conn.cursor()
 
         cursor.execute("""INSERT INTO users(username,email,password)
@@ -98,7 +113,7 @@ def user_dashboard():
     user_id=session.get('user_id')
     if 'user_id' not in session:
         return redirect(url_for("login"))
-    conn=sqlite3.connect("database.db")
+    conn=getdb()
     cursor=conn.cursor()
     # Fetch all task details to display in the UI table.
     cursor.execute("SELECT * FROM tasks WHERE user_id=?", (user_id,))
@@ -121,11 +136,11 @@ def user_dashboard():
     cursor.execute("SELECT COUNT(*) FROM tasks WHERE user_id=? AND priority='HIGH'", (user_id,))
     high_priority = cursor.fetchone()[0]
     conn.close()
-    return render_template("user_dashboard.html",alltasks=tasks,total_tasks=total,pending_tasks=pending,inprogresstas=inprogress,high=high_priority)
+    return render_template("user_dashboard.html",alltasks=tasks,total_tasks=total,pending_tasks=pending,inprogresstas=inprogress,high=high_priority,completed=completed)
 
 @app.route("/setup_admin")
 def setup_admin():
-    conn=sqlite3.connect("database.db")
+    conn=getdb()
     cursor=conn.cursor()
     cursor.execute("""INSERT INTO users(username,email,password,role)
                        VALUES(?,?,?,?)
@@ -152,7 +167,7 @@ def add_task():
         description = request.form['description']
         due_date = request.form['due_date']
         priority = ai_priority_logic(description)
-        conn = sqlite3.connect("database.db")
+        conn = getdb()
         cursor = conn.cursor()
         cursor.execute("""INSERT INTO tasks(title,description,due_date,priority,user_id)
                            VALUES(?,?,?,?,?)
@@ -164,14 +179,174 @@ def add_task():
 def admin_dashboard():
     if session.get('role')!='admin':
         return "Access denied"
-    conn = sqlite3.connect("database.db")
+    conn = getdb()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM tasks ORDER BY priority DESC")
+    # Get tasks with user information
+    cursor.execute("""
+        SELECT t.id, t.title, t.description, t.status, t.priority, t.due_date, t.user_id, u.username
+        FROM tasks t
+        LEFT JOIN users u ON t.user_id = u.id
+        ORDER BY t.priority DESC
+    """)
     all_task=cursor.fetchall()
+    
+    # Get statistics for all tasks
+    cursor.execute("SELECT COUNT(*) FROM tasks")
+    total_tasks = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM tasks WHERE priority='HIGH'")
+    high_priority = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM tasks WHERE status='Completed'")
+    completed = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM tasks WHERE status='Pending'")
+    pending = cursor.fetchone()[0]
+    
     conn.close()
 
-    return render_template("admin_dashboard.html",tasks=all_task)
+    return render_template("admin_dashboard.html", tasks=all_task, total_tasks=total_tasks, high=high_priority, completed=completed, pending_tasks=pending)
+
+@app.route("/manage_tasks")
+def manage_tasks():
+    if session.get('role')!='admin':
+        return redirect(url_for("login"))
+    
+    conn = getdb()
+    cursor = conn.cursor()
+    
+    # Get all tasks with user information
+    cursor.execute("""
+        SELECT t.id, t.title, t.description, t.status, t.priority, t.due_date, t.user_id, u.username
+        FROM tasks t
+        LEFT JOIN users u ON t.user_id = u.id
+        ORDER BY t.priority DESC
+    """)
+    tasks = cursor.fetchall()
+    
+    conn.close()
+    
+    return render_template("manage_tasks.html", tasks=tasks)
+
+@app.route("/manage_users")
+def manage_users():
+    if session.get('role') != 'admin':
+        return redirect(url_for("login"))
+    
+    conn = getdb()
+    cursor = conn.cursor()
+    
+    # Fetch all users
+    cursor.execute("SELECT id, username, email, role FROM users ORDER BY username")
+    users = cursor.fetchall()
+    
+    conn.close()
+    
+    return render_template("manage_users.html", users=users)
+
+@app.route("/my_tasks")
+def my_tasks():
+    if 'user_id' not in session:
+        return redirect(url_for("login"))
+    
+    user_id = session.get('user_id')
+    conn = getdb()
+    cursor = conn.cursor()
+    
+    # Fetch user's tasks
+    cursor.execute("SELECT * FROM tasks WHERE user_id = ? ORDER BY priority DESC, due_date ASC", (user_id,))
+    tasks = cursor.fetchall()
+    
+    conn.close()
+    
+    return render_template("my_tasks.html", tasks=tasks)
+
+@app.route("/start_task/<int:task_id>")
+def start_task(task_id):
+    if 'user_id' not in session:
+        return redirect(url_for("login"))
+    
+    user_id = session.get('user_id')
+    conn = getdb()
+    cursor = conn.cursor()
+    
+    # Verify task belongs to user and update status
+    cursor.execute("UPDATE tasks SET status = 'In Progress' WHERE id = ? AND user_id = ?", (task_id, user_id))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for("my_tasks"))
+
+@app.route("/complete_task/<int:task_id>")
+def complete_task(task_id):
+    if 'user_id' not in session:
+        return redirect(url_for("login"))
+    
+    user_id = session.get('user_id')
+    conn = getdb()
+    cursor = conn.cursor()
+    
+    # Verify task belongs to user and update status
+    cursor.execute("UPDATE tasks SET status = 'Completed' WHERE id = ? AND user_id = ?", (task_id, user_id))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for("my_tasks"))
+
+@app.route("/admin_start_task/<int:task_id>")
+def admin_start_task(task_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for("login"))
+    
+    conn = getdb()
+    cursor = conn.cursor()
+    
+    # Update task status to In Progress
+    cursor.execute("UPDATE tasks SET status = 'In Progress' WHERE id = ?", (task_id,))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for("admin_dashboard"))
+
+@app.route("/admin_complete_task/<int:task_id>")
+def admin_complete_task(task_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for("login"))
+    
+    conn = getdb()
+    cursor = conn.cursor()
+    
+    # Update task status to completed
+    cursor.execute("UPDATE tasks SET status = 'Completed' WHERE id = ?", (task_id,))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for("admin_dashboard"))
+
+@app.route("/delete_user/<int:user_id>")
+def delete_user(user_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for("login"))
+    
+    # Prevent deleting admin users
+    conn = getdb()
+    cursor = conn.cursor()
+    cursor.execute("SELECT role FROM users WHERE id = ?", (user_id,))
+    user_role = cursor.fetchone()
+    
+    if user_role and user_role[0] == 'admin':
+        conn.close()
+        return redirect(url_for("manage_users"))
+    
+    # Delete user's tasks first, then the user
+    cursor.execute("DELETE FROM tasks WHERE user_id = ?", (user_id,))
+    cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for("manage_users"))
+
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)

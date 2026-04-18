@@ -27,7 +27,7 @@
 <nav class="navbar navbar-dark bg-black border-bottom border-light">
     <div class="container">
         <span class="navbar-brand fw-bold">MY TASKS</span>
-        <a href="user_dashboard.html" class="btn btn-custom">Back</a>
+        <a href="/user_dashboard" class="btn btn-custom">Back</a>
     </div>
 </nav>
 
@@ -36,39 +36,44 @@
     <h2>My Tasks</h2>
 
     <table class="table table-dark table-bordered">
-    
-    <tr>
-    <th>Title</th>
-    <th>Description</th>
-    <th>Status</th>
-    <th>Action</th>
-    </tr>
-    
-    {% for task in tasks %}
-    
-    <tr>
-    <td>{{ task[1] }}</td>
-    <td>{{ task[2] }}</td>
-    <td>{{ task[4] }}</td>
-    
-    <td>
-    
-    {% if task[4] == "Pending" %}
-    <a href="/start_task/{{ task[0] }}" class="btn btn-warning btn-sm">Start</a>
-    
-    {% elif task[4] == "In Progress" %}
-    <a href="/complete_task/{{ task[0] }}" class="btn btn-success btn-sm">Complete</a>
-    
-    {% else %}
-    Completed
-    {% endif %}
-    
-    </td>
-    
-    </tr>
-    
-    {% endfor %}
-    
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Due Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task[2] }}</td>
+                <td>{{ task[3] }}</td>
+                <td>
+                    <span class="badge {% if task[5] == 'HIGH' %}bg-danger{% elif task[5] == 'MEDIUM' %}bg-warning{% else %}bg-secondary{% endif %}">
+                        {{ task[5] }}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge {% if task[4] == 'Completed' %}bg-success{% elif task[4] == 'In Progress' %}bg-primary{% else %}bg-warning{% endif %}">
+                        {{ task[4] }}
+                    </span>
+                </td>
+                <td>{{ task[6] }}</td>
+                <td>
+                    {% if task[4] == "Pending" %}
+                        <a href="/start_task/{{ task[0] }}" class="btn btn-warning btn-sm">Start</a>
+                    {% elif task[4] == "In Progress" %}
+                        <a href="/complete_task/{{ task[0] }}" class="btn btn-success btn-sm">Complete</a>
+                    {% else %}
+                        <span class="text-success">✓ Completed</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 </div>
 

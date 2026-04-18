@@ -27,7 +27,7 @@
 <nav class="navbar navbar-dark bg-black border-bottom border-light">
     <div class="container">
         <span class="navbar-brand fw-bold">MANAGE USERS</span>
-        <a href="admin_dashboard.html" class="btn btn-custom">Back</a>
+        <a href="/admin_dashboard" class="btn btn-custom">Back</a>
     </div>
 </nav>
 
@@ -43,14 +43,24 @@
             </tr>
         </thead>
         <tbody>
+            {% for user in users %}
             <tr>
-                <td>Arun</td>
-                <td>arun@email.com</td>
-                <td>User</td>
+                <td>{{ user[1] }}</td>
+                <td>{{ user[2] }}</td>
                 <td>
-                    <button class="btn btn-danger btn-sm">Delete</button>
+                    <span class="badge {% if user[3] == 'admin' %}bg-danger{% else %}bg-primary{% endif %}">
+                        {{ user[3] }}
+                    </span>
+                </td>
+                <td>
+                    {% if user[3] != 'admin' %}
+                        <a href="/delete_user/{{ user[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
+                    {% else %}
+                        <span class="text-muted">Cannot delete admin</span>
+                    {% endif %}
                 </td>
             </tr>
+            {% endfor %}
         </tbody>
     </table>
 

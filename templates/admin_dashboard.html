@@ -6,11 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         body {
             background-color: #000;
             color: #fff;
+        }
+        .card {
+            background-color: #111;
+            border: 1px solid #fff;
         }
         table {
             color: #fff;
@@ -29,17 +34,68 @@
           <a class="navbar-brand fw-bold text-white" href="#">ADMIN PANEL</a>
       
           <div>
-            <a class="btn btn-outline-light me-2" href="admin_dashboard.html">Dashboard</a>
-            <a class="btn btn-outline-light me-2" href="manage_tasks.html">Manage Tasks</a>
-            <a class="btn btn-outline-light me-2" href="manage_users.html">Manage Users</a>
-            <a class="btn btn-light fw-bold" href="#">Logout</a>
+            <a class="btn btn-outline-light me-2" href="/admin_dashboard">Dashboard</a>
+            <a class="btn btn-outline-light me-2" href="/manage_tasks">Manage Tasks</a>
+            <a class="btn btn-outline-light me-2" href="/manage_users">Manage Users</a>
+            <a class="btn btn-light fw-bold" href="/logout">Logout</a>
           </div>
         </div>
       </nav>
 
 <div class="container mt-4">
 
-    <h3 class="fw-bold mb-3">All Tasks</h3>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card p-3 text-center text-white">
+                <h5>Total Tasks</h5>
+                <h2>{{ total_tasks }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3 text-center text-white">
+                <h5>High Priority</h5>
+                <h2>{{ high }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3 text-center text-white">
+                <h5>Completed</h5>
+                <h2>{{ completed }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-4 mt-4 mx-auto" style="max-width: 400px;">
+        <h5 class="fw-bold text-center text-white">Task Status Overview</h5>
+        <canvas id="statusChart"></canvas>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Pending', 'Completed', 'In Progress'],
+                datasets: [{
+                    data: [{{ pending_tasks }}, {{ completed }}, {{ total_tasks - pending_tasks - completed }}],
+                    backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56'],
+                    borderColor: ['#fff', '#fff', '#fff'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#fff' }
+                    }
+                }
+            }
+        });
+    </script>
+
+    <h3 class="fw-bold mb-3 mt-5">All Tasks</h3>
 
     <table class="table table-dark table-bordered">
         <thead>
@@ -52,15 +108,23 @@
             </tr>
         </thead>
         <tbody>
+            {% for task in tasks %}
             <tr>
-                <td>Arun</td>
-                <td>Server Issue</td>
-                <td>High</td>
-                <td>Pending</td>
+                <td>{{ task[7] if task[7] else 'Unknown' }}</td>
+                <td>{{ task[1] }}</td>
+                <td>{{ task[4] }}</td>
+                <td>{{ task[3] }}</td>
                 <td>
-                    <button class="btn btn-custom btn-sm">Complete</button>
+                    {% if task[3] == 'Pending' %}
+                        <a href="/admin_start_task/{{ task[0] }}" class="btn btn-primary btn-sm" onclick="return confirm('Start this task?')">Start</a>
+                    {% elif task[3] == 'In Progress' %}
+                        <a href="/admin_complete_task/{{ task[0] }}" class="btn btn-custom btn-sm" onclick="return confirm('Mark this task as completed?')">Complete</a>
+                    {% else %}
+                        <span class="text-success">✓ Completed</span>
+                    {% endif %}
                 </td>
             </tr>
+            {% endfor %}
         </tbody>
     </table>
 

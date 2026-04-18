@@ -34,10 +34,10 @@
           <a class="navbar-brand fw-bold text-white" href="#">USER PANEL</a>
       
           <div>
-            <a class="btn btn-outline-light me-2" href="user_dashboard.html">Dashboard</a>
-            <a class="btn btn-outline-light me-2" href="add_task.html">Add Task</a>
-            <a class="btn btn-outline-light me-2" href="my_tasks.html">My Tasks</a>
-            <a class="btn btn-light fw-bold" href="#">Logout</a>
+            <a class="btn btn-outline-light me-2" href="/user_dashboard">Dashboard</a>
+            <a class="btn btn-outline-light me-2" href="/add_task">Add Task</a>
+            <a class="btn btn-outline-light me-2" href="/my_tasks">My Tasks</a>
+            <a class="btn btn-light fw-bold" href="/logout">Logout</a>
           </div>
         </div>
       </nav>
@@ -48,19 +48,19 @@
         <div class="col-md-4">
             <div class="card p-3 text-center text-white">
                 <h5>Total Tasks</h5>
-                <h2>10</h2>
+                <h2>{{ total_tasks }}</h2>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card p-3 text-center text-white">
                 <h5>High Priority</h5>
-                <h2>3</h2>
+                <h2>{{ high }}</h2>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card p-3 text-center text-white">
-                <h5>Overdue</h5>
-                <h2>1</h2>
+                <h5>Completed</h5>
+                <h2>{{ completed }}</h2>
             </div>
         </div>
     </div>
@@ -83,12 +83,14 @@
             </tr>
         </thead>
         <tbody>
+            {% for task in alltasks %}
             <tr>
-                <td>Server Issue</td>
-                <td>High</td>
-                <td>Pending</td>
-                <td>2026-02-25</td>
+                <td>{{ task[2] }}</td>
+                <td>{{ task[4] }}</td>
+                <td>{{ task[3] }}</td>
+                <td>{{ task[5] }}</td>
             </tr>
+            {% endfor %}
         </tbody>
     </table>
 
@@ -96,12 +98,17 @@
 <script>
     const ctx = document.getElementById('statusChart');
     
+    // Ensure variables have default values
+    const pendingTasks = {{ pending_tasks | default(0) }};
+    const inProgressTasks = {{ inprogresstas | default(0) }};
+    const completedTasks = {{ completed | default(0) }};
+    
     new Chart(ctx, {
         type: 'pie',
         data: {
             labels: ['Pending', 'In Progress', 'Completed'],
             datasets: [{
-                data: [5, 3, 2],
+                data: [pendingTasks, inProgressTasks, completedTasks],
                 backgroundColor: ['#ffffff', '#888888', '#444444']
             }]
         },
