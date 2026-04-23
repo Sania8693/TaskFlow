@@ -82,5 +82,3 @@ Completed → Shows "✓ Completed" text
 Manage Tasks - Same two-step workflow applied
 
 User Dashboard - Already fetches data from the database, so status changes made by admin will automatically reflect there
-
-

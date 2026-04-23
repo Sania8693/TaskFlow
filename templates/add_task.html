@@ -41,26 +41,26 @@
         <a href="/user_dashboard" class="btn btn-outline-light">← Back to Dashboard</a>
     </div>
     <div class="card p-4 mx-auto" style="max-width: 600px;">
-        <h3 class="text-center mb-4">Add Task</h3>
+        <h3 class="text-center mb-4 text-white">Add Task</h3>
 
         <form action="/add_task" method="POST" enctype="multipart/form-data">
 
             <!-- Title -->
             <div class="mb-3">
-                <label class="form-label">Task Title</label>
+                <label class="form-label text-white">Task Title</label>
                 <input type="text" name="title" class="form-control" required>
             </div>
 
             <!-- Description -->
             <div class="mb-3">
-                <label class="form-label">Description</label>
+                <label class="form-label text-white">Description</label>
                 <textarea name="description" rows="3" class="form-control" required></textarea>
             </div>
 
             <!-- Row -->
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Due Date</label>
+                    <label class="form-label text-white">Due Date</label>
                     <input type="date" name="due_date" class="form-control" required>
                 </div>
 
@@ -70,20 +70,14 @@
             
             <!-- Category -->
             <div class="mb-3">
-                <label class="form-label">Category</label>
+                <label class="form-label text-white">Category</label>
                 <input type="text" name="category" class="form-control" placeholder="Work, Personal...">
             </div>
 
             <!-- File Upload -->
             <div class="mb-3">
-                <label class="form-label">Attachment</label>
+                <label class="form-label text-white">Attachment</label>
                 <input type="file" name="file" class="form-control">
-            </div>
-
-            <!-- Checkbox -->
-            <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" name="reminder">
-                <label class="form-check-label">Set Reminder</label>
             </div>
 
             <!-- Submit -->

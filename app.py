@@ -1,9 +1,24 @@
 import sqlite3
 import os
+import random
 from datetime import datetime
-from flask import Flask, render_template,request,redirect,session,url_for
+from flask import Flask, render_template, request, redirect, session, url_for, send_file, jsonify
+from werkzeug.utils import secure_filename
 app=Flask(__name__)
 app.secret_key="secret_key_for_session"
+
+# File upload configuration
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Create uploads directory if it doesn't exist
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Absolute path for database - persists in current directory
 DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "database.db"))
@@ -35,12 +50,100 @@ def init_db():
             priority TEXT,
             due_date DATE,
             user_id INTEGER,
+            category TEXT,
+            file_path TEXT,
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
     conn.commit()
     conn.close()
     print(f"Database initialized at: {DB_PATH}")
+
+def chatbot_response(message):
+    """Return a chatbot answer based on a user's message."""
+    if not message:
+        return "Please type your question so I can help."
+
+    text = message.lower()
+
+    greeting_responses = [
+        "Hello! I'm SmartTask, your task assistant. Ask me anything about registration, login, or task management.",
+        "Hi there! I can help you register, log in, create tasks, and understand how the dashboard works.",
+    ]
+
+    register_responses = [
+        "Start by clicking 'Get Started', then fill the registration form with your username, email, and password.",
+        "Register first using the link on the homepage. After registration, you can log in and create tasks right away.",
+    ]
+
+    login_responses = [
+        "Use the Login button in the top nav to sign in with your email and password.",
+        "If you already have an account, log in and your task dashboard will appear instantly.",
+    ]
+
+    task_responses = [
+        "After logging in, go to task creation and add a title, description, due date, and optional category.",
+        "Each task you add gets a priority automatically based on the description, so you can focus on what matters.",
+    ]
+
+    priority_responses = [
+        "Tasks are labeled HIGH, MEDIUM, or LOW based on keyword importance like urgent, critical, update, and improve.",
+        "The AI logic checks your task description for urgency words and assigns a priority to help you plan better.",
+    ]
+
+    dashboard_responses = [
+        "Your dashboard shows totals, pending tasks, in-progress work, completed tasks, and priority counts.",
+        "The admin dashboard gives an overview of all tasks, while the user dashboard shows only your own tasks.",
+    ]
+
+    if any(greet in text for greet in ["hi", "hello", "hey", "greetings"]):
+        return random.choice(greeting_responses)
+
+    if any(word in text for word in ["register", "sign up", "create account"]):
+        return random.choice(register_responses)
+
+    if any(word in text for word in ["login", "sign in", "log in"]):
+        return random.choice(login_responses)
+
+    if any(word in text for word in ["task", "create", "add task", "new task"]):
+        return random.choice(task_responses)
+
+    if any(word in text for word in ["priority", "classify", "ai", "urgent", "critical"]):
+        return random.choice(priority_responses)
+
+    if any(word in text for word in ["dashboard", "analytics", "progress", "completed", "pending", "in progress"]):
+        return random.choice(dashboard_responses)
+
+    if "due date" in text or "deadline" in text:
+        return "You can include a due date when creating a task so the system stores it and you can track deadlines from your dashboard."
+
+    if "password" in text and "forgot" not in text:
+        return "Make sure you use the correct registered email and password when logging in. If you forgot your password, register again or add a recovery feature later."
+
+    if any(word in text for word in ["forgot", "reset"]):
+        return "This version does not have a password reset flow yet, so please use your existing credentials or register a new account."
+
+    if any(word in text for word in ["bye", "thanks", "thank you", "see you"]):
+        return random.choice([
+            "You're welcome! If you want, I can help with another question.",
+            "Glad I could help. Close the chat when you're done and I'll reset the conversation next time.",
+        ])
+
+    if any(word in text for word in ["who are you", "your name", "yourself"]):
+        return "I'm SmartTask Assistant, here to help you register, log in, create tasks, and understand your dashboard."
+
+    default_responses = [
+        "I can answer questions about registration, login, task creation, priorities, and dashboards. What would you like to know?",
+        "Try asking how to add a task, how priority classification works, or how to view your dashboard.",
+    ]
+    return random.choice(default_responses)
+
+@app.route('/chatbot', methods=['POST'])
+def chatbot():
+    user_message = request.json.get('message') if request.is_json else request.form.get('message')
+    reply = chatbot_response(user_message)
+    return jsonify({'reply': reply})
+
 def ai_priority_logic(description):
     #intelligent logic for automatic priority assignment
     desc=description.lower()
@@ -166,12 +269,23 @@ def add_task():
         title = request.form['title']
         description = request.form['description']
         due_date = request.form['due_date']
+        category = request.form.get('category', '')  # Optional field
         priority = ai_priority_logic(description)
+        
+        # Handle file upload
+        file_path = None
+        if 'file' in request.files:
+            file = request.files['file']
+            if file.filename != '' and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(file_path)
+        
         conn = getdb()
         cursor = conn.cursor()
-        cursor.execute("""INSERT INTO tasks(title,description,due_date,priority,user_id)
-                           VALUES(?,?,?,?,?)
-                           """, (title, description, due_date, priority, session['user_id']))
+        cursor.execute("""INSERT INTO tasks(title,description,due_date,priority,user_id,category,file_path)
+                           VALUES(?,?,?,?,?,?,?)
+                           """, (title, description, due_date, priority, session['user_id'], category, file_path))
         conn.commit()
         conn.close()
         return redirect(url_for("user_dashboard"))
@@ -184,7 +298,7 @@ def admin_dashboard():
 
     # Get tasks with user information
     cursor.execute("""
-        SELECT t.id, t.title, t.description, t.status, t.priority, t.due_date, t.user_id, u.username
+        SELECT t.id, t.title, t.description, t.status, t.priority, t.due_date, t.user_id, u.username, t.category, t.file_path
         FROM tasks t
         LEFT JOIN users u ON t.user_id = u.id
         ORDER BY t.priority DESC
@@ -218,7 +332,7 @@ def manage_tasks():
     
     # Get all tasks with user information
     cursor.execute("""
-        SELECT t.id, t.title, t.description, t.status, t.priority, t.due_date, t.user_id, u.username
+        SELECT t.id, t.title, t.description, t.status, t.priority, t.due_date, t.user_id, u.username, t.category, t.file_path
         FROM tasks t
         LEFT JOIN users u ON t.user_id = u.id
         ORDER BY t.priority DESC
@@ -294,6 +408,27 @@ def complete_task(task_id):
     
     return redirect(url_for("my_tasks"))
 
+@app.route("/download/<int:task_id>")
+def download_file(task_id):
+    if 'user_id' not in session:
+        return redirect(url_for("login"))
+    
+    user_id = session.get('user_id')
+    conn = getdb()
+    cursor = conn.cursor()
+    
+    # Verify task belongs to user and get file path
+    cursor.execute("SELECT file_path FROM tasks WHERE id = ? AND user_id = ?", (task_id, user_id))
+    result = cursor.fetchone()
+    conn.close()
+    
+    if result and result[0]:
+        file_path = result[0]
+        if os.path.exists(file_path):
+            return send_file(file_path, as_attachment=True)
+    
+    return "File not found", 404
+
 @app.route("/admin_start_task/<int:task_id>")
 def admin_start_task(task_id):
     if session.get('role') != 'admin':
@@ -323,6 +458,26 @@ def admin_complete_task(task_id):
     conn.close()
     
     return redirect(url_for("admin_dashboard"))
+
+@app.route("/admin_download/<int:task_id>")
+def admin_download_file(task_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for("login"))
+    
+    conn = getdb()
+    cursor = conn.cursor()
+    
+    # Get file path for the task
+    cursor.execute("SELECT file_path FROM tasks WHERE id = ?", (task_id,))
+    result = cursor.fetchone()
+    conn.close()
+    
+    if result and result[0]:
+        file_path = result[0]
+        if os.path.exists(file_path):
+            return send_file(file_path, as_attachment=True)
+    
+    return "File not found", 404
 
 @app.route("/delete_user/<int:user_id>")
 def delete_user(user_id):

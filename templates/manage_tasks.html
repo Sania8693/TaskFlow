@@ -38,8 +38,10 @@
             <tr>
                 <th>User</th>
                 <th>Title</th>
+                <th>Category</th>
                 <th>Priority</th>
                 <th>Status</th>
+                <th>Attachment</th>
                 <th>Change Status</th>
             </tr>
         </thead>
@@ -48,8 +50,16 @@
             <tr>
                 <td>{{ task[7] if task[7] else 'Unknown' }}</td>
                 <td>{{ task[1] }}</td>
+                <td>{{ task[8] if task[8] else '-' }}</td>
                 <td>{{ task[4] }}</td>
                 <td>{{ task[3] }}</td>
+                <td>
+                    {% if task[9] %}
+                        <a href="/admin_download/{{ task[0] }}" class="btn btn-outline-light btn-sm">Download</a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
                 <td>
                     {% if task[3] == 'Pending' %}
                         <a href="/admin_start_task/{{ task[0] }}" class="btn btn-primary btn-sm" onclick="return confirm('Start this task?')">Start</a>

@@ -75,6 +75,122 @@
             background-color: #ccc;
         }
 
+        .chat-widget {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            max-width: 90vw;
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 18px;
+            box-shadow: 0 18px 60px rgba(0,0,0,0.35);
+            overflow: hidden;
+            z-index: 1050;
+        }
+
+        .chat-header {
+            padding: 14px 16px;
+            background: #111;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h5 {
+            margin: 0;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .chat-messages {
+            max-height: 320px;
+            overflow-y: auto;
+            padding: 16px;
+            background: rgba(0,0,0,0.8);
+        }
+
+        .chat-message {
+            margin-bottom: 14px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-message.user .message-bubble {
+            background: #fff;
+            color: #000;
+            align-self: flex-end;
+            border-radius: 18px 18px 4px 18px;
+        }
+
+        .chat-message.bot .message-bubble {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            border-radius: 18px 18px 18px 4px;
+        }
+
+        .message-bubble {
+            padding: 12px 14px;
+            line-height: 1.5;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            padding: 12px 14px;
+            background: #111;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .chat-input input {
+            flex: 1;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 999px;
+            padding: 10px 14px;
+            background: #121212;
+            color: #fff;
+        }
+
+        .chat-input button {
+            border-radius: 999px;
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 10px 18px;
+            font-weight: 700;
+        }
+
+        .chat-options {
+            padding: 12px 14px;
+            background: #111;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .chat-options .btn {
+            margin-bottom: 8px;
+            width: 100%;
+        }
+
+        .chat-open-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1060;
+            border-radius: 999px;
+            background: #fff;
+            color: #000;
+            padding: 12px 18px;
+            border: none;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+            font-weight: 700;
+        }
+
         footer {
             border-top: 1px solid #444;
             padding: 20px 0;
@@ -104,6 +220,30 @@
         <a href="/register" class="btn btn-custom mt-3">Get Started</a>
     </div>
 </section>
+
+<div class="chat-widget shadow-lg" id="chatWidget">
+    <div class="chat-header">
+        <h5>SmartTask Assistant</h5>
+        <button class="btn btn-sm btn-outline-light" id="chatToggle">Close</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+        <div class="chat-message bot">
+            <div class="message-bubble">Hi there! Choose an option below to ask me a question.</div>
+        </div>
+    </div>
+    <div class="chat-options">
+        <button class="btn btn-outline-light btn-sm" onclick="sendMessage('How do I register?')">How do I register?</button>
+        <button class="btn btn-outline-light btn-sm" onclick="sendMessage('How do I login?')">How do I login?</button>
+        <button class="btn btn-outline-light btn-sm" onclick="sendMessage('How do I create a task?')">How do I create a task?</button>
+        <button class="btn btn-outline-light btn-sm" onclick="sendMessage('What is AI priority classification?')">What is AI priority classification?</button>
+        <button class="btn btn-outline-light btn-sm" onclick="sendMessage('How do I view my dashboard?')">How do I view my dashboard?</button>
+        <button class="btn btn-outline-light btn-sm" onclick="sendMessage('What about due dates?')">What about due dates?</button>
+        <button class="btn btn-outline-light btn-sm" onclick="sendMessage('I forgot my password')">I forgot my password</button>
+        <button class="btn btn-outline-light btn-sm" onclick="sendMessage('Who are you?')">Who are you?</button>
+        <button class="btn btn-outline-light btn-sm" onclick="sendMessage('I need help')">I need help</button>
+        <button class="btn btn-outline-light btn-sm" onclick="sendMessage('Goodbye')">Goodbye</button>
+    </div>
+</div>
 
 <!-- FEATURES -->
 <section id="features" class="container mt-5 pt-5 fade-in" style="min-height: 100vh;">
@@ -175,32 +315,22 @@
 
 <!-- CONTACT -->
 <section id="contact" class="container mt-5 mb-5 fade-in">
-    <h2 class="text-center fw-bold mb-4">Contact</h2>
+    <h2 class="text-center fw-bold mb-4">Contact Us</h2>
 
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <form>
-                <div class="mb-3">
-                    <input type="text" class="form-control bg-dark text-white border-light" placeholder="Your Name">
-                </div>
-
-                <div class="mb-3">
-                    <input type="email" class="form-control bg-dark text-white border-light" placeholder="Your Email">
-                </div>
-
-                <div class="mb-3">
-                    <textarea class="form-control bg-dark text-white border-light" rows="4" placeholder="Your Message"></textarea>
-                </div>
-
-                <button class="btn btn-light w-100 fw-bold">Send Message</button>
-            </form>
+        <div class="col-md-6 text-center">
+            <p class="mb-3">Get in touch with us:</p>
+            <p><strong>Email:</strong> taskflow74@gmail.com</p>
+            <p>We'd love to hear from you!</p>
         </div>
     </div>
 </section>
 <section class="text-center mt-5 mb-5">
     <h3 class="fw-bold">Ready to Boost Productivity?</h3>
-    <a href="register.html" class="btn btn-light fw-bold mt-3 px-4">Join Now</a>
+    <a href="/register" class="btn btn-light fw-bold mt-3 px-4">Join Now</a>
   </section>
+
+<button class="btn btn-primary chat-open-button" id="chatOpenButton">Chat with Assistant</button>
 
 <!-- FOOTER -->
 <footer class="text-center">
@@ -245,6 +375,60 @@
             }
         };
         update();
+    });
+    const chatMessages = document.getElementById('chatMessages');
+    const chatToggle = document.getElementById('chatToggle');
+    const chatWidget = document.getElementById('chatWidget');
+
+    function appendMessage(role, text) {
+        const messageEl = document.createElement('div');
+        messageEl.className = 'chat-message ' + role;
+
+        const bubble = document.createElement('div');
+        bubble.className = 'message-bubble';
+        bubble.textContent = text;
+
+        messageEl.appendChild(bubble);
+        chatMessages.appendChild(messageEl);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function sendMessage(message) {
+        appendMessage('user', message);
+
+        try {
+            const response = await fetch('/chatbot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message })
+            });
+            const data = await response.json();
+            appendMessage('bot', data.reply || 'Sorry, I could not answer that.');
+        } catch (error) {
+            appendMessage('bot', 'Sorry, I could not connect to the assistant.');
+        }
+    }
+
+    function resetChat() {
+        chatMessages.innerHTML = `
+            <div class="chat-message bot">
+                <div class="message-bubble">Hi there! Choose an option below to ask me a question.</div>
+            </div>
+        `;
+    }
+
+    chatToggle.addEventListener('click', function() {
+        chatWidget.style.display = 'none';
+        document.getElementById('chatOpenButton').style.display = 'block';
+        resetChat();
+    });
+
+    document.getElementById('chatOpenButton').addEventListener('click', function() {
+        resetChat();
+        chatWidget.style.display = 'block';
+        this.style.display = 'none';
     });
 </script>
 </body>
