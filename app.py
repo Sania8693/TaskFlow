@@ -4,8 +4,15 @@ import random
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, session, url_for, send_file, jsonify
 from werkzeug.utils import secure_filename
+from functools import wraps
 app=Flask(__name__)
 app.secret_key="secret_key_for_session"
+
+# Configure session cookie security
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 hour session lifetime
+app.config['SESSION_REFRESH_EACH_REQUEST'] = True
 
 # File upload configuration
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -15,6 +22,29 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Create uploads directory if it doesn't exist
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+
+# Middleware to add cache control headers
+@app.after_request
+def set_cache_headers(response):
+    """Set cache control headers to prevent form resubmission and caching of sensitive pages"""
+    # Check if this is a redirect response
+    if response.status_code in [301, 302, 303, 307, 308]:
+        # Redirects should not be cached
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    # Login and auth pages should not be cached
+    elif request.endpoint and request.endpoint in ['login', 'register', 'logout', 'user_dashboard', 'admin_dashboard']:
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0, private'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    # POST responses should never be cached
+    elif request.method == 'POST':
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    
+    return response
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -177,14 +207,19 @@ def login():
         conn.close()
 
         if user:
-            session['user_id']=user[0]
-            session['username']=user[1]
-            session['email']=user[2]
-            session['role']=user[4]
+            # Set session data
+            session['user_id'] = user[0]
+            session['username'] = user[1]
+            session['email'] = user[2]
+            session['role'] = user[4]
             session['login_time'] = datetime.now().strftime("%B %d, %Y at %I:%M %p")
-
-            return render_template("login_success.html", username=user[1], email=user[2], role=user[4], login_time=session['login_time'])
+            session['show_success_page'] = True
+            
+            # Redirect to login success page
+            return redirect(url_for("login_success"))
+        
         return "Invalid credentials"
+    
     return render_template("login.html")
 
 @app.route('/logout')
@@ -192,6 +227,25 @@ def logout():
     """Logout user and clear session"""
     session.clear()
     return redirect(url_for("login"))
+
+@app.route('/login_success')
+def login_success():
+    """Display login success message - only accessible after successful login via redirect"""
+    if 'user_id' not in session or not session.get('show_success_page'):
+        return redirect(url_for("login"))
+    
+    # Clear the flag so the page isn't accessible directly on back navigation
+    session['show_success_page'] = False
+    
+    # Determine dashboard route based on role
+    dashboard_route = "admin_dashboard" if session.get('role') == 'admin' else "user_dashboard"
+    
+    return render_template("login_success.html", 
+                          username=session.get('username'), 
+                          email=session.get('email'), 
+                          role=session.get('role'), 
+                          login_time=session.get('login_time'),
+                          dashboard_route=url_for(dashboard_route))
 
 @app.route('/register',methods=['GET','POST'])
 def register():
@@ -213,11 +267,13 @@ def register():
 
 @app.route("/user_dashboard")
 def user_dashboard():
-    user_id=session.get('user_id')
+    """User dashboard - only accessible to logged-in users"""
+    user_id = session.get('user_id')
     if 'user_id' not in session:
         return redirect(url_for("login"))
-    conn=getdb()
-    cursor=conn.cursor()
+    
+    conn = getdb()
+    cursor = conn.cursor()
     # Fetch all task details to display in the UI table.
     cursor.execute("SELECT * FROM tasks WHERE user_id=?", (user_id,))
     tasks = cursor.fetchall()
@@ -239,6 +295,10 @@ def user_dashboard():
     cursor.execute("SELECT COUNT(*) FROM tasks WHERE user_id=? AND priority='HIGH'", (user_id,))
     high_priority = cursor.fetchone()[0]
     conn.close()
+    
+    # Mark that user is actively using dashboard (for back button detection)
+    session['viewing_dashboard'] = True
+    
     return render_template("user_dashboard.html",alltasks=tasks,total_tasks=total,pending_tasks=pending,inprogresstas=inprogress,high=high_priority,completed=completed)
 
 @app.route("/setup_admin")

@@ -93,6 +93,12 @@
                 }
             }
         });
+        
+        // Prevent going back from dashboard - redirect to login instead
+        history.pushState(null, null, window.location.href);
+        window.addEventListener('popstate', function() {
+            window.location.href = "/login";
+        });
     </script>
 
     <h3 class="fw-bold mb-3 mt-5">All Tasks</h3>
