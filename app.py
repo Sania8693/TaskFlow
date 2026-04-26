@@ -218,7 +218,7 @@ def login():
             # Redirect to login success page
             return redirect(url_for("login_success"))
         
-        return "Invalid credentials"
+        return render_template("login.html", error="Invalid email or password")
     
     return render_template("login.html")
 
