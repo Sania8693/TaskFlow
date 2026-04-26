@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #33353c 0%, #342a3d 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -43,7 +43,7 @@
         }
         
         .btn-gradient {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea 0%, #37323c 100%);
             color: white;
             border: none;
             transition: all 0.3s ease;
@@ -84,15 +84,21 @@
         </div>
     </div>
     <script>
-    const role = "{{ role }}";
-    const dashboardUrl = role === 'admin' ? '/admin_dashboard' : '/user_dashboard';
+    // Store the dashboard URL from the server
+    const dashboardUrl = "{{ dashboard_route }}";
     
-    // Manual button click
+    // Prevent going back to this page - redirect to login instead
+    history.pushState(null, null, window.location.href);
+    window.addEventListener('popstate', function() {
+        window.location.href = "/login";
+    });
+    
+    // Manual button click to go to dashboard
     document.getElementById('dashboardBtn').addEventListener('click', function(e) {
         e.preventDefault();
         window.location.href = dashboardUrl;
     });
-</script>
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

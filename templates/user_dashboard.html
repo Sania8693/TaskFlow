@@ -122,6 +122,12 @@
             }
         }
     });
+    
+    // Prevent going back from dashboard - redirect to login instead
+    history.pushState(null, null, window.location.href);
+    window.addEventListener('popstate', function() {
+        window.location.href = "/login";
+    });
     </script>
 </body>
 </html>
