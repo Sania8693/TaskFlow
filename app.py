@@ -311,7 +311,23 @@ def setup_admin():
     conn.commit()
     conn.close()
     return "admin created"
-    
+
+@app.route("/remove_duplicate_admins")
+def remove_duplicate_admins():
+    conn = getdb()
+    cursor = conn.cursor()
+    # Delete duplicate admins, keeping the one with smallest id
+    cursor.execute("""
+        DELETE FROM users 
+        WHERE username = 'admin' AND id NOT IN (
+            SELECT MIN(id) FROM users WHERE username = 'admin'
+        )
+    """)
+    deleted = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return f"Removed {deleted} duplicate admin entries"
+
 @app.route("/add_task", methods=["GET", "POST"])
 def add_task():
     if request.method == "GET":

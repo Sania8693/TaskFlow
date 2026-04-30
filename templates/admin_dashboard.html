@@ -1,150 +1,141 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Admin Dashboard</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <style>
-        body {
-            background-color: #000;
-            color: #fff;
-        }
-        .card {
-            background-color: #111;
-            border: 1px solid #fff;
-        }
-        table {
-            color: #fff;
-        }
-        .btn-custom {
-            background-color: #fff;
-            color: #000;
-            font-weight: bold;
-        }
+        * { font-family: 'Poppins', sans-serif; }
+        body { margin:0; min-height:100vh; background:url('https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1650&q=80') center/cover no-repeat fixed; color:#eef3ff; }
+        body::before { content:''; position:fixed; inset:0; background:rgba(4,10,26,0.82); z-index:0; }
+        .admin-shell { position:relative; z-index:1; padding-bottom:60px; }
+        .navbar { background:rgba(4,9,30,0.92); backdrop-filter:blur(18px); border-bottom:1px solid rgba(255,255,255,0.1); }
+        .navbar-brand { color:#00d4ff !important; font-weight:700; letter-spacing:.06em; }
+        .nav-actions .btn, .nav-actions .nav-link { color:#eef3ff !important; }
+        .nav-actions .btn-glow { background:linear-gradient(135deg,#00d4ff,#8a2be2); color:#fff; box-shadow:0 18px 44px rgba(0,212,255,0.26); }
+        .hero-card, .chart-card, .table-card { background:rgba(10,18,35,0.92); border:1px solid rgba(255,255,255,0.1); border-radius:28px; backdrop-filter:blur(18px); box-shadow:0 28px 90px rgba(0,0,0,0.32); }
+        .hero-grid { display:grid; grid-template-columns:1.2fr .8fr; gap:24px; margin:100px auto 24px; max-width:1140px; }
+        .hero-card { display:flex; flex-direction:column; justify-content:center; padding:32px;width:1200px; margin-left: -25px;}
+        .hero-card h1 { margin-bottom:16px; font-size:2.8rem; }
+        .hero-card p { color:rgba(255,255,255,0.72); margin-bottom:24px; }
+        .hero-badge { display:inline-flex; align-items:center; gap:10px; padding:12px 18px; border-radius:999px; background:rgba(0,212,255,0.12); color:#00d4ff; border:1px solid rgba(0,212,255,0.24); margin-bottom:18px; }
+        .stats-grid { max-width:1140px; margin:auto; display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+        .stat-card { padding:24px; border-radius:24px; position:relative; overflow:hidden; }
+        .stat-card::after { content:''; position:absolute; top:-20px; right:-18px; width:84px; height:84px; border-radius:50%; background:rgba(0,212,255,0.18); filter:blur(14px); }
+        .stat-card h5 { color:rgba(255,255,255,0.72); margin-bottom:10px; text-transform:uppercase; letter-spacing:.08em; }
+        .stat-card h2 { margin:0; font-size:2.4rem; }
+        .chart-card { padding:28px; margin-top:24px; }
+        .chart-card h5, .table-card h5 { color:rgba(255,255,255,0.78); margin-bottom:18px; }
+        .table-card { padding:28px; margin:24px auto 40px; max-width:1140px; }
+        .table-responsive { border-radius:22px; overflow:hidden; }
+        table { min-width:760px; color:#eef3ff; }
+        thead tr { background:rgba(255,255,255,0.06); }
+        td, th { border:none; vertical-align:middle; }
+        tbody tr:hover { background:rgba(255,255,255,0.08); transform:translateY(-1px); transition:all .2s ease; }
+        .badge-status { padding:.55em .85em; border-radius:999px; font-size:.85rem; font-weight:600; }
+        .badge-pending { background:rgba(255,193,7,0.18); color:#fff3b0; }
+        .badge-completed { background:rgba(46,204,113,0.18); color:#d4f5db; }
+        .badge-progress { background:rgba(138,43,226,0.18); color:#e5d8ff; }
+        .btn-action { border-radius:999px; padding:.65rem 1rem; }
+        @media(max-width:1100px) { .hero-grid { grid-template-columns:1fr; } }
+        @media(max-width:768px) { .stats-grid { grid-template-columns:1fr; } .hero-card, .chart-card, .table-card { padding:22px; } }
     </style>
 </head>
 <body>
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-light py-3">
-        <div class="container">
-          <a class="navbar-brand fw-bold text-white" href="#">ADMIN PANEL</a>
-      
-          <div>
-            <a class="btn btn-outline-light me-2" href="/admin_dashboard">Dashboard</a>
-            <a class="btn btn-outline-light me-2" href="/manage_tasks">Manage Tasks</a>
-            <a class="btn btn-outline-light me-2" href="/manage_users">Manage Users</a>
-            <a class="btn btn-light fw-bold" href="/logout">Logout</a>
-          </div>
-        </div>
-      </nav>
-
-<div class="container mt-4">
-
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card p-3 text-center text-white">
-                <h5>Total Tasks</h5>
-                <h2>{{ total_tasks }}</h2>
+    <div class="admin-shell">
+        <nav class="navbar navbar-expand-lg py-3 fixed-top">
+            <div class="container d-flex justify-content-between align-items-center">
+                <a class="navbar-brand" href="/">SmartTask</a>
+                <div class="nav-actions d-flex align-items-center gap-2">
+                    <a class="nav-link" href="/admin_dashboard">Dashboard</a>
+                    <a class="nav-link" href="/manage_tasks">Manage Tasks</a>
+                    <a class="nav-link" href="/manage_users">Manage Users</a>
+                    <a class="btn btn-sm btn-glow" href="/logout">Logout</a>
+                </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card p-3 text-center text-white">
-                <h5>High Priority</h5>
-                <h2>{{ high }}</h2>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card p-3 text-center text-white">
-                <h5>Completed</h5>
-                <h2>{{ completed }}</h2>
-            </div>
-        </div>
+        </nav>
+        <main class="container" style="padding-top:120px;">
+            <section class="hero-grid">
+                <div class="hero-card">
+                    <span class="hero-badge"><i class="bi bi-shield-lock-fill"></i> Admin Overview</span>
+                    <h1>Manage tasks and users with premium control.</h1>
+                    <p>Real-time insights, activity overview, and one-click administration for your task platform.</p>
+                </div>
+            </section>
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <h5>Total Tasks</h5>
+                    <h2>{{ total_tasks or 0 }}</h2>
+                </div>
+                <div class="stat-card">
+                    <h5>High Priority</h5>
+                    <h2>{{ high or 0 }}</h2>
+                </div>
+                <div class="stat-card">
+                    <h5>Completed</h5>
+                    <h2>{{ completed or 0 }}</h2>
+                </div>
+            </section>
+            <section class="chart-card">
+                <h5>Task status overview</h5>
+                <div class="chart-container d-flex justify-content-center" style="height:320px;"><canvas id="statusChart"></canvas></div>
+            </section>
+            <section class="table-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div><h5>All Tasks</h5><p class="mb-0 text-white-50">Monitor every task from one centralized admin view.</p></div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-borderless align-middle mb-0">
+                        <thead><tr><th>User</th><th>Title</th><th>Category</th><th>Priority</th><th>Status</th><th>Attachment</th><th>Action</th></tr></thead>
+                        <tbody>
+                            {% for task in tasks %}
+                            <tr>
+                                <td>{{ task[7] if task[7] else 'Unknown' }}</td>
+                                <td>{{ task[1] }}</td>
+                                <td>{{ task[8] if task[8] else '-' }}</td>
+                                <td>{{ task[4] }}</td>
+                                <td>{{ task[3] }}</td>
+                                <td>
+                                    {% if task[9] %}
+                                        <a href="/admin_download/{{ task[0] }}" class="btn btn-primary btn-sm btn-action">Download</a>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if task[3] == 'Pending' %}
+                                        <a href="/admin_start_task/{{ task[0] }}" class="btn btn-primary btn-sm btn-action" onclick="return confirm('Start this task?')">Start</a>
+                                    {% elif task[3] == 'In Progress' %}
+                                        <a href="/admin_complete_task/{{ task[0] }}" class="btn btn-primary btn-sm btn-action" onclick="return confirm('Mark this task as completed?')">Complete</a>
+                                    {% else %}
+                                        <span class="badge border border-primary text-primary badge-completed ">✓ Completed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
     </div>
-
-    <div class="card p-4 mt-4 mx-auto" style="max-width: 400px;">
-        <h5 class="fw-bold text-center text-white">Task Status Overview</h5>
-        <canvas id="statusChart"></canvas>
-    </div>
-
     <script>
         const ctx = document.getElementById('statusChart').getContext('2d');
         new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['Pending', 'Completed', 'In Progress'],
-                datasets: [{
-                    data: [{{ pending_tasks }}, {{ completed }}, {{ total_tasks - pending_tasks - completed }}],
-                    backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56'],
-                    borderColor: ['#fff', '#fff', '#fff'],
-                    borderWidth: 1
-                }]
+            type:'doughnut',
+            data:{
+                labels:['Pending','Completed','In Progress'],
+                datasets:[{ data:[{{ pending_tasks or 0 }}, {{ completed or 0 }}, {{ total_tasks - pending_tasks - completed if total_tasks is not none else 0 }}], backgroundColor:['#ff6384','#2ecc71','#8a2be2'], borderWidth:0 }]
             },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: '#fff' }
-                    }
-                }
-            }
+            options:{ responsive:true, plugins:{ legend:{ position:'bottom', labels:{ color:'#eef3ff' } } }, cutout:'70%' }
         });
-        
-        // Prevent going back from dashboard - redirect to login instead
         history.pushState(null, null, window.location.href);
-        window.addEventListener('popstate', function() {
-            window.location.href = "/login";
-        });
+        window.addEventListener('popstate', ()=>window.location.href='/login');
     </script>
-
-    <h3 class="fw-bold mb-3 mt-5">All Tasks</h3>
-
-    <table class="table table-dark table-bordered">
-        <thead>
-            <tr>
-                <th>User</th>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Attachment</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for task in tasks %}
-            <tr>
-                <td>{{ task[7] if task[7] else 'Unknown' }}</td>
-                <td>{{ task[1] }}</td>
-                <td>{{ task[8] if task[8] else '-' }}</td>
-                <td>{{ task[4] }}</td>
-                <td>{{ task[3] }}</td>
-                <td>
-                    {% if task[9] %}
-                        <a href="/admin_download/{{ task[0] }}" class="btn btn-outline-light btn-sm">Download</a>
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-                <td>
-                    {% if task[3] == 'Pending' %}
-                        <a href="/admin_start_task/{{ task[0] }}" class="btn btn-primary btn-sm" onclick="return confirm('Start this task?')">Start</a>
-                    {% elif task[3] == 'In Progress' %}
-                        <a href="/admin_complete_task/{{ task[0] }}" class="btn btn-custom btn-sm" onclick="return confirm('Mark this task as completed?')">Complete</a>
-                    {% else %}
-                        <span class="text-success">✓ Completed</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-</div>
-
 </body>
 </html>

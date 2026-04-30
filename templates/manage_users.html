@@ -1,70 +1,66 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Manage Users</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        body {
-            background-color: #000;
-            color: #fff;
-        }
-        table {
-            color: #fff;
-        }
-        .btn-custom {
-            background-color: #fff;
-            color: #000;
-            font-weight: bold;
-        }
+        * { font-family: 'Poppins', sans-serif; }
+        body { margin:0; min-height:100vh; background:url('https://images.unsplash.com/photo-1492724441997-5dc865305da0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1650&q=80') center/cover no-repeat fixed; color:#eef3ff; }
+        body::before { content:''; position:fixed; inset:0; background:rgba(4,10,26,0.85); z-index:0; }
+        .page-shell { position:relative; z-index:1; padding:40px 20px; }
+        .topbar { background:rgba(10,18,35,0.92); border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:18px 24px; backdrop-filter:blur(18px); box-shadow:0 24px 70px rgba(0,0,0,0.3); }
+        .topbar .navbar-brand { color:#00d4ff; font-weight:700; letter-spacing:.08em; }
+        .topbar .btn-glow { background:linear-gradient(135deg,#8a2be2,#00d4ff); color:#fff; border:none; }
+        .content-card { margin-top:24px; background:rgba(10,18,35,0.9); border:1px solid rgba(255,255,255,0.1); border-radius:28px; padding:28px; box-shadow:0 28px 90px rgba(0,0,0,0.28); }
+        .table-responsive { border-radius:22px; overflow:hidden; }
+        table { min-width:100%; color:#eef3ff; }
+        thead tr { background:rgba(255,255,255,0.06); }
+        td, th { border:none; vertical-align:middle; }
+        tbody tr:hover { background:rgba(255,255,255,0.08); transform:translateY(-1px); transition:all .2s ease; }
+        .badge-admin { background:rgba(255,0,76,0.18); color:#ff9dcc; }
+        .badge-user { background:rgba(0,212,255,0.18); color:#a6f5ff; }
+        .btn-delete { border-radius:999px; padding:.55rem 1rem; }
+        @media(max-width:768px) { .topbar, .content-card { padding:22px; } }
     </style>
 </head>
 <body>
-
-<nav class="navbar navbar-dark bg-black border-bottom border-light">
-    <div class="container">
-        <span class="navbar-brand fw-bold">MANAGE USERS</span>
-        <a href="/admin_dashboard" class="btn btn-custom">Back</a>
+    <div class="page-shell">
+        <div class="topbar d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <a href="/" class="navbar-brand mb-0">SmartTask</a>
+            <a href="/admin_dashboard" class="btn btn-glow">← Back to Dashboard</a>
+        </div>
+        <div class="content-card">
+            <div class="mb-4">
+                <h3 class="mb-1">User Directory</h3>
+                <p class="text-white-50 mb-0">Monitor user accounts and manage access from a secure admin panel.</p>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-borderless align-middle mb-0">
+                    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Action</th></tr></thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user[1] }}</td>
+                            <td>{{ user[2] }}</td>
+                            <td><span class="badge {% if user[3] == 'admin' %}badge-admin{% else %}badge-user{% endif %}">{{ user[3] }}</span></td>
+                            <td>
+                                {% if user[3] != 'admin' %}
+                                    <a href="/delete_user/{{ user[0] }}" class="btn btn-danger btn-sm btn-delete" onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
+                                {% else %}
+                                    <span class="text-white-50">Cannot delete admin</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</nav>
-
-<div class="container mt-4">
-
-    <table class="table table-dark table-bordered">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in users %}
-            <tr>
-                <td>{{ user[1] }}</td>
-                <td>{{ user[2] }}</td>
-                <td>
-                    <span class="badge {% if user[3] == 'admin' %}bg-danger{% else %}bg-primary{% endif %}">
-                        {{ user[3] }}
-                    </span>
-                </td>
-                <td>
-                    {% if user[3] != 'admin' %}
-                        <a href="/delete_user/{{ user[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
-                    {% else %}
-                        <span class="text-muted">Cannot delete admin</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-</div>
-
 </body>
 </html>
