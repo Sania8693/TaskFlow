@@ -1,81 +1,75 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>My Tasks</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        body {
-            background-color: #000;
-            color: #fff;
-        }
-        table {
-            color: #fff;
-        }
-        .btn-custom {
-            background-color: #fff;
-            color: #000;
-            font-weight: bold;
-        }
+        * { font-family: 'Poppins', sans-serif; }
+        body { margin:0; min-height:100vh; background:url('https://images.unsplash.com/photo-1490059834513-f965a85b7d68?ixlib=rb-4.0.3&auto=format&fit=crop&w=1650&q=80') center/cover no-repeat fixed; color:#eef3ff; }
+        body::before { content:''; position:fixed; inset:0; background:rgba(4,10,26,0.85); z-index:0; }
+        .page-shell { position:relative; z-index:1; padding:40px 20px; }
+        .topbar { background:rgba(10,18,35,0.92); border:1px solid rgba(255,255,255,0.1); border-radius:24px; padding:18px 24px; backdrop-filter:blur(18px); box-shadow:0 24px 70px rgba(0,0,0,0.3); }
+        .topbar .navbar-brand { color:#00d4ff; font-weight:700; letter-spacing:.08em; }
+        .topbar .btn-glow { background:linear-gradient(135deg,#00d4ff,#8a2be2); color:#fff; border:none; }
+        .content-card { margin-top:24px; background:rgba(10,18,35,0.9); border:1px solid rgba(255,255,255,0.1); border-radius:28px; padding:28px; box-shadow:0 28px 90px rgba(0,0,0,0.28); }
+        .table-responsive { border-radius:22px; overflow:hidden; }
+        table { min-width:100%; color:#eef3ff; }
+        thead tr { background:rgba(255,255,255,0.06); }
+        td, th { border:none; vertical-align:middle; }
+        tbody tr:hover { background:rgba(255,255,255,0.08); transform:translateY(-1px); transition:all .2s ease; }
+        .badge-priority { padding:.45rem .8rem; border-radius:999px; font-size:.85rem; font-weight:600; }
+        .badge-high { background:rgba(255,76,76,0.18); color:#ffc7d7; }
+        .badge-medium { background:rgba(138,43,226,0.18); color:#e5d8ff; }
+        .badge-low { background:rgba(108,117,255,0.18); color:#cfe1ff; }
+        .badge-status { padding:.45rem .8rem; border-radius:999px; font-size:.85rem; font-weight:600; }
+        .badge-completed { background:rgba(46,204,113,0.18); color:#d4f5db; }
+        .badge-progress { background:rgba(0,212,255,0.18); color:#a6f5ff; }
+        .badge-pending { background:rgba(255,193,7,0.18); color:#fff3b0; }
+        .btn-download { border-radius:999px; padding:.55rem 1rem; }
+        @media(max-width:768px) { .topbar, .content-card { padding:22px; } }
     </style>
 </head>
 <body>
-
-<nav class="navbar navbar-dark bg-black border-bottom border-light">
-    <div class="container">
-        <span class="navbar-brand fw-bold">MY TASKS</span>
-        <a href="/user_dashboard" class="btn btn-custom">Back</a>
+    <div class="page-shell">
+        <div class="topbar d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <a href="/" class="navbar-brand mb-0">SmartTask</a>
+            <a href="/user_dashboard" class="btn btn-glow">← Back to Dashboard</a>
+        </div>
+        <div class="content-card">
+            <div class="mb-4">
+                <h3 class="mb-1">My Task List</h3>
+                <p class="text-white-50 mb-0">All your assigned tasks, status updates, and attachments in one place.</p>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-borderless align-middle mb-0">
+                    <thead><tr><th>Title</th><th>Description</th><th>Category</th><th>Due Date</th><th>Priority</th><th>Status</th><th>Attachment</th></tr></thead>
+                    <tbody>
+                        {% for task in tasks %}
+                        <tr>
+                            <td>{{ task[1] }}</td>
+                            <td>{{ task[2] }}</td>
+                            <td>{{ task[7] if task[7] else '-' }}</td>
+                            <td>{{ task[5] }}</td>
+                            <td><span class="badge-priority {% if task[4] == 'HIGH' %}badge-high text-danger{% elif task[4] == 'MEDIUM' %}badge-medium text-warning{% else %}badge-low text-success{% endif %}">{{ task[4] }}</span></td>
+                            <td><span class="badge-status {% if task[3] == 'Completed' %}badge-completed text-success{% elif task[3] == 'In Progress' %}badge-progress text-warning{% else %}badge-pending text-danger{% endif %}">{{ task[3] }}</span></td>
+                            <td>
+                                {% if task[8] %}
+                                    <a href="/download/{{ task[0] }}" class="btn btn-primary btn-sm btn-action">Download</a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</nav>
-
-<div class="container mt-4">
-
-    <h2>My Tasks</h2>
-
-    <table class="table table-dark table-bordered">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th>Due Date</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Attachment</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for task in tasks %}
-            <tr>
-                <td>{{ task[1] }}</td>
-                <td>{{ task[2] }}</td>
-                <td>{{ task[7] if task[7] else '-' }}</td>
-                <td>{{ task[5] }}</td>
-                <td>
-                    <span class="badge {% if task[4] == 'HIGH' %}bg-danger{% elif task[4] == 'MEDIUM' %}bg-warning{% else %}bg-secondary{% endif %}">
-                        {{ task[4] }}
-                    </span>
-                </td>
-                <td>
-                    <span class="badge {% if task[3] == 'Completed' %}bg-success{% elif task[3] == 'In Progress' %}bg-primary{% else %}bg-warning{% endif %}">
-                        {{ task[3] }}
-                    </span>
-                </td>
-                <td>
-                    {% if task[8] %}
-                        <a href="/download/{{ task[0] }}" class="btn btn-outline-light btn-sm">Download</a>
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
 </body>
 </html>
