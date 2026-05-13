@@ -89,6 +89,24 @@ def init_db():
     conn.close()
     print(f"Database initialized at: {DB_PATH}")
 
+
+def delete_task_record(task_id):
+    conn = getdb()
+    cursor = conn.cursor()
+    cursor.execute("SELECT file_path FROM tasks WHERE id = ?", (task_id,))
+    row = cursor.fetchone()
+    if row and row[0]:
+        file_path = row[0]
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except OSError:
+                pass
+    cursor.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+    conn.commit()
+    conn.close()
+
+
 def chatbot_response(message):
     """Return a chatbot answer based on a user's message."""
     if not message:
@@ -484,6 +502,21 @@ def complete_task(task_id):
     
     return redirect(url_for("my_tasks"))
 
+@app.route("/delete_task/<int:task_id>")
+def delete_task(task_id):
+    if 'user_id' not in session:
+        return redirect(url_for("login"))
+    
+    user_id = session.get('user_id')
+    conn = getdb()
+    cursor = conn.cursor()
+    cursor.execute("SELECT status FROM tasks WHERE id = ? AND user_id = ?", (task_id, user_id))
+    result = cursor.fetchone()
+    conn.close()
+    if result and result[0] == 'Pending':
+        delete_task_record(task_id)
+    return redirect(url_for("my_tasks"))
+
 @app.route("/download/<int:task_id>")
 def download_file(task_id):
     if 'user_id' not in session:
@@ -533,6 +566,17 @@ def admin_complete_task(task_id):
     conn.commit()
     conn.close()
     
+    return redirect(url_for("admin_dashboard"))
+
+@app.route("/admin_delete_task/<int:task_id>")
+def admin_delete_task(task_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for("login"))
+    
+    delete_task_record(task_id)
+    next_page = request.args.get('next')
+    if next_page == 'manage_tasks':
+        return redirect(url_for('manage_tasks'))
     return redirect(url_for("admin_dashboard"))
 
 @app.route("/admin_download/<int:task_id>")

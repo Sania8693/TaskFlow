@@ -63,12 +63,13 @@
                             </td>
                             <td>
                                 {% if task[3] == 'Pending' %}
-                                    <a href="/admin_start_task/{{ task[0] }}" class="btn btn-primary btn-sm btn-action" onclick="return confirm('Start this task?')">Start</a>
+                                    <a href="/admin_start_task/{{ task[0] }}" class="btn btn-primary btn-sm btn-action mb-1" onclick="return confirm('Start this task?')">Start</a>
                                 {% elif task[3] == 'In Progress' %}
-                                    <a href="/admin_complete_task/{{ task[0] }}" class="btn btn-primary btn-sm btn-action" onclick="return confirm('Mark this task as completed?')">Complete</a>
+                                    <a href="/admin_complete_task/{{ task[0] }}" class="btn btn-primary btn-sm btn-action mb-1" onclick="return confirm('Mark this task as completed?')">Complete</a>
                                 {% else %}
                                     <span class="badge border border-primary text-primary badge-completed">✓ Completed</span>
                                 {% endif %}
+                                <a href="/admin_delete_task/{{ task[0] }}?next=manage_tasks" class="btn btn-danger btn-sm btn-action" onclick="return confirm('Delete this task permanently?')">Delete</a>
                             </td>
                         </tr>
                         {% endfor %}
