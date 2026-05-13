@@ -23,39 +23,6 @@
             overflow-x: hidden;
         }
 
-        body, body * {
-            color: #ffffff !important;
-        }
-
-        body *::placeholder {
-            color: #ffffff !important;
-            opacity: 1 !important;
-        }
-
-        a, a:hover, a:focus {
-            color: #ffffff !important;
-            text-decoration: none;
-        }
-
-        .force-white-text,
-        .navbar-brand span,
-        .text-warning {
-            background: none !important;
-            -webkit-background-clip: unset !important;
-            -webkit-text-fill-color: #ffffff !important;
-            background-clip: unset !important;
-            color: #ffffff !important;
-        }
-
-        .nav-btn:hover {
-            color: #ffffff !important;
-            transform: translateY(-2px);
-        }
-
-        .text-warning {
-            color: #ffffff !important;
-        }
-
         body::before {
             content: '';
             position: fixed;
@@ -94,7 +61,7 @@
         }
 
         .nav-btn:hover {
-            color: #ffffff !important;
+            color: #00d4ff;
             transform: translateY(-2px);
         }
 
@@ -500,7 +467,8 @@
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="navbar">
     <div class="container">
         <a class="navbar-brand fw-bold" href="/">
-                <span class="force-white-text">SmartTask</span>
+            <span style="background: linear-gradient(135deg, #00d4ff, #8a2be2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">SmartTask</span>
+        </a>
 
         <div class="d-flex align-items-center gap-3">
             <a class="nav-btn" href="#features">Features</a>
@@ -637,12 +605,12 @@
         </div>
 
         <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
-            <h2 class="fw-bold mt-4 force-white-text">98%</h2>
+            <h2 class="fw-bold mt-4" style="background: linear-gradient(135deg, #00d4ff, #8a2be2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">98%</h2>
             <p class="fs-5">AI Classification Accuracy</p>
         </div>
 
         <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
-            <h2 class="fw-bold mt-4 force-white-text">50+</h2>
+            <h2 class="fw-bold mt-4" style="background: linear-gradient(135deg, #00d4ff, #8a2be2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">50+</h2>
             <p class="fs-5">Active Users</p>
         </div>
     </div>
