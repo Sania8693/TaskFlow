@@ -30,8 +30,9 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.5) 100%);
-            z-index: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 100%);
+            color: #fff;
+            z-index: -1;
         }
 
         html {
@@ -359,10 +360,14 @@
             margin-top: 4px;
         }
 
+        .testimonial-card small {
+            color: #fff !important;
+        }
+
         .typing-indicator {
             display: none;
             padding: 12px 14px;
-            color: #888;
+            color: #fff;
             font-style: italic;
         }
 
@@ -441,6 +446,51 @@
             backdrop-filter: blur(10px);
         }
 
+        .chat-options .btn {
+            color: #fff !important;
+            border-color: #fff !important;
+        }
+
+        .chat-options .btn:hover {
+            background-color: #fff !important;
+            color: #000 !important;
+        }
+
+        /* Make all section headings white */
+        section h2, section h5 {
+            color: #fff !important;
+        }
+
+        /* Make all section paragraphs white */
+        section p {
+            color: #fff !important;
+            opacity: 1 !important;
+        }
+
+        /* Override opacity-75 class */
+        .opacity-75 {
+            opacity: 1 !important;
+            color: #fff !important;
+        }
+
+        /* Make feature card text white */
+        .glass-card h5, .glass-card p {
+            color: #fff !important;
+        }
+
+        /* Make testimonial text white */
+        .testimonial-card {
+            color: #fff !important;
+        }
+
+        .testimonial-card p {
+            color: #fff !important;
+        }
+
+        .testimonial-card h6 {
+            color: #fff !important;
+        }
+
         @media (max-width: 768px) {
             .hero-content {
                 flex-direction: column;
@@ -478,7 +528,7 @@
 <!-- HERO SECTION -->
 <section id="home" class="hero">
     <video class="bg-video" autoplay muted loop preload="auto" playsinline>
-        <source src="{{ url_for('static', filename='video.mp4') }}" type="video/mp4">
+        <source src="{{ url_for('static', filename='video3.mp4') }}" type="video/mp4">
     </video>
     <div class="hero-content container">
         <div class="row justify-content-center">
@@ -657,7 +707,7 @@
     <div class="row justify-content-center">
         <div class="col-md-6 text-center">
             <p class="mb-3 fs-5">Ready to transform your task management?</p>
-            <p><strong>Email:</strong> <a href="mailto:taskflow74@gmail.com" class="text-decoration-none" style="color: #00d4ff;">taskflow74@gmail.com</a></p>
+            <p><strong>Email:</strong> <a href="mailto:taskflow74@gmail.com" class="text-decoration-none" style="color: #fff;">taskflow74@gmail.com</a></p>
             <p class="mb-4">We'd love to hear from you and help boost your productivity!</p>
             <a href="/register" class="btn btn-custom">Start Your Journey</a>
         </div>
