@@ -45,13 +45,14 @@
             </div>
             <div class="table-responsive">
                 <table class="table table-borderless align-middle mb-0">
-                    <thead><tr><th>User</th><th>Title</th><th>Category</th><th>Priority</th><th>Status</th><th>Attachment</th><th>Action</th></tr></thead>
+                    <thead><tr><th>User</th><th>Title</th><th>Category</th><th>Description</th><th>Priority</th><th>Status</th><th>Attachment</th><th>Action</th></tr></thead>
                     <tbody>
                         {% for task in tasks %}
                         <tr>
                             <td>{{ task[7] if task[7] else 'Unknown' }}</td>
                             <td>{{ task[1] }}</td>
                             <td>{{ task[8] if task[8] else '-' }}</td>
+                            <td>{{ task[2] }}</td>
                             <td>{{ task[4] }}</td>
                             <td>{{ task[3] }}</td>
                             <td>
